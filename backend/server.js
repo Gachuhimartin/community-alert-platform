@@ -24,9 +24,14 @@ const server = createServer(app);
 // Connect to Database
 connectDB();
 
-// CORS Middleware - SIMPLIFIED
+
+// ✅ NEW CODE (ALLOWS BOTH LOCALHOST AND PRODUCTION):
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173", 
+    "https://community-alert-platform.vercel.app",
+    "https://community-alert-platform-nvnwtpoe3-gachuhimartins-projects.vercel.app"
+  ],
   credentials: true
 }));
 
