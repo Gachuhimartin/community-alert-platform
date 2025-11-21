@@ -65,11 +65,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Socket.io setup
+
+// ✅ FIX SOCKET.IO CORS TOO:
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
+    origin: [
+      "http://localhost:5173", 
+      "https://community-alert-platform.vercel.app",
+      "https://community-alert-platform-nvnwtpoe3-gachuhimartins-projects.vercel.app"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -88,5 +94,5 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-  console.log(`✅ CORS enabled for: http://localhost:5173`);
+  console.log(`✅ CORS enabled for: http://localhost:5173, https://community-alert-platform.vercel.app`);
 });
