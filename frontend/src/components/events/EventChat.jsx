@@ -143,6 +143,15 @@ const EventChat = ({ event, onClose }) => {
     return new Date(timestamp).toLocaleDateString();
   };
 
+  // FIXED: Proper user identification function
+  const isCurrentUser = (message) => {
+    // Handle both string IDs and populated user objects
+    if (typeof message.userId === 'object' && message.userId._id) {
+      return message.userId._id === user.id;
+    }
+    return message.userId === user.id;
+  };
+
   // Group messages by date
   const groupMessagesByDate = () => {
     const groups = {};
@@ -158,11 +167,26 @@ const EventChat = ({ event, onClose }) => {
 
   const messageGroups = groupMessagesByDate();
 
+  // Debug: Log message ownership
+  useEffect(() => {
+    if (messages.length > 0) {
+      console.log('🔍 Message Ownership Debug:', {
+        currentUserId: user.id,
+        messages: messages.map(msg => ({
+          id: msg._id,
+          userId: msg.userId,
+          username: msg.username,
+          isCurrentUser: isCurrentUser(msg),
+          userIdType: typeof msg.userId
+        }))
+      });
+    }
+  }, [messages, user.id]);
+
   if (!event) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      {/* Compact Chat Modal */}
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md h-[500px] flex flex-col">
         
         {/* Header - Compact */}
@@ -184,7 +208,6 @@ const EventChat = ({ event, onClose }) => {
           </div>
           
           <div className="flex items-center space-x-2">
-            {/* Online Users Toggle */}
             <button
               onClick={() => setShowOnlineUsers(!showOnlineUsers)}
               className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition"
@@ -200,7 +223,6 @@ const EventChat = ({ event, onClose }) => {
               </div>
             </button>
             
-            {/* Close Button */}
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition"
@@ -231,86 +253,88 @@ const EventChat = ({ event, onClose }) => {
           </div>
         )}
 
-     {/* In the messages area, replace the message rendering part: */}
-<div className="flex-1 overflow-y-auto p-3 bg-gray-50">
-  {loading ? (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-gray-500 text-sm">Loading messages...</div>
-    </div>
-  ) : messages.length === 0 ? (
-    <div className="flex flex-col items-center justify-center h-full text-center">
-      <div className="text-3xl mb-2">💬</div>
-      <p className="text-gray-500 text-sm">No messages yet</p>
-      <p className="text-gray-400 text-xs">Start the conversation!</p>
-    </div>
-  ) : (
-    <div className="space-y-4"> {/* Increased from space-y-3 to space-y-4 */}
-      {Object.entries(messageGroups).map(([date, dateMessages]) => (
-        <div key={date}>
-          {/* Date Separator */}
-          <div className="flex items-center justify-center my-6"> {/* Increased from my-4 to my-6 */}
-            <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
-              {date}
+        {/* Messages Area - FIXED */}
+        <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-gray-500 text-sm">Loading messages...</div>
             </div>
-          </div>
-          
-          {/* Messages for this date */}
-          <div className="space-y-3"> {/* Added container with spacing */}
-            {dateMessages.map((msg, index) => (
-              <div
-                key={msg._id}
-                className={`flex ${msg.userId === user.id ? 'justify-end' : 'justify-start'} ${msg.system ? 'justify-center' : ''}`}
-              >
-                {msg.system ? (
-                  <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs mx-auto">
-                    {msg.message}
-                  </div>
-                ) : (
-                  <div
-                    className={`max-w-[80%] px-3 py-2 rounded-2xl ${
-                      msg.userId === user.id
-                        ? 'bg-blue-500 text-white rounded-br-none'
-                        : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                    } ${index > 0 ? 'mt-2' : ''}`} // Added conditional margin
-                  >
-                    {msg.userId !== user.id && (
-                      <div className="text-xs font-medium text-blue-600 mb-1">
-                        {msg.username}
-                      </div>
-                    )}
-                    <div className="text-sm leading-relaxed">{msg.message}</div> {/* Added leading-relaxed */}
-                    <div className={`text-xs mt-1 ${
-                      msg.userId === user.id ? 'text-blue-200' : 'text-gray-500'
-                    }`}>
-                      {formatTime(msg.timestamp)}
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="text-3xl mb-2">💬</div>
+              <p className="text-gray-500 text-sm">No messages yet</p>
+              <p className="text-gray-400 text-xs">Start the conversation!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Object.entries(messageGroups).map(([date, dateMessages]) => (
+                <div key={date}>
+                  {/* Date Separator */}
+                  <div className="flex items-center justify-center my-6">
+                    <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                      {date}
                     </div>
                   </div>
-                )}
+                  
+                  {/* Messages for this date - FIXED OWNERSHIP */}
+                  <div className="space-y-3">
+                    {dateMessages.map((msg, index) => {
+                      const isCurrentUserMsg = isCurrentUser(msg);
+                      return (
+                        <div
+                          key={msg._id}
+                          className={`flex ${isCurrentUserMsg ? 'justify-end' : 'justify-start'} ${msg.system ? 'justify-center' : ''}`}
+                        >
+                          {msg.system ? (
+                            <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs mx-auto">
+                              {msg.message}
+                            </div>
+                          ) : (
+                            <div
+                              className={`max-w-[80%] px-3 py-2 rounded-2xl ${
+                                isCurrentUserMsg
+                                  ? 'bg-blue-500 text-white rounded-br-none'
+                                  : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                              } ${index > 0 ? 'mt-2' : ''}`}
+                            >
+                              {!isCurrentUserMsg && (
+                                <div className="text-xs font-medium text-blue-600 mb-1">
+                                  {msg.username || (msg.userId?.username)}
+                                </div>
+                              )}
+                              <div className="text-sm leading-relaxed">{msg.message}</div>
+                              <div className={`text-xs mt-1 ${
+                                isCurrentUserMsg ? 'text-blue-200' : 'text-gray-500'
+                              }`}>
+                                {formatTime(msg.timestamp)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Typing Indicator */}
+          {isTyping && typingUsers.size > 0 && (
+            <div className="flex justify-start mt-3">
+              <div className="bg-white border border-gray-200 text-gray-600 px-3 py-2 rounded-2xl rounded-bl-none">
+                <div className="text-xs">
+                  {Array.from(typingUsers).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
+                  <span className="ml-1 animate-pulse">✍️</span>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
         </div>
-      ))}
-    </div>
-  )}
-  
-  {/* Typing Indicator - Compact */}
-  {isTyping && typingUsers.size > 0 && (
-    <div className="flex justify-start mt-3"> {/* Added mt-3 */}
-      <div className="bg-white border border-gray-200 text-gray-600 px-3 py-2 rounded-2xl rounded-bl-none">
-        <div className="text-xs">
-          {Array.from(typingUsers).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
-          <span className="ml-1 animate-pulse">✍️</span>
-        </div>
-      </div>
-    </div>
-  )}
-  
-  <div ref={messagesEndRef} />
-</div>
 
-
-        {/* Message Input - Compact */}
+        {/* Message Input */}
         <div className="p-3 border-t border-gray-200 bg-white">
           <form onSubmit={handleSendMessage} className="flex space-x-2">
             <input

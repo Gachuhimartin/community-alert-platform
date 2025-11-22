@@ -139,6 +139,14 @@ const AlertChat = ({ alert, onClose }) => {
     });
   };
 
+  // ✅ FIXED: Proper user identification
+  const isCurrentUser = (message) => {
+    if (typeof message.userId === 'object' && message.userId._id) {
+      return message.userId._id === user.id;
+    }
+    return message.userId === user.id;
+  };
+
   if (!alert) return null;
 
   return (
@@ -209,7 +217,7 @@ const AlertChat = ({ alert, onClose }) => {
           </div>
         )}
 
-        {/* Messages Area - Compact */}
+        {/* Messages Area - FIXED */}
         <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
           {loading ? (
             <div className="flex items-center justify-center h-full">
@@ -223,38 +231,41 @@ const AlertChat = ({ alert, onClose }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {messages.map((msg) => (
-                <div
-                  key={msg._id}
-                  className={`flex ${msg.userId === user.id ? 'justify-end' : 'justify-start'} ${msg.system ? 'justify-center' : ''}`}
-                >
-                  {msg.system ? (
-                    <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs mx-auto">
-                      {msg.message}
-                    </div>
-                  ) : (
-                    <div
-                      className={`max-w-[80%] px-3 py-2 rounded-2xl ${
-                        msg.userId === user.id
-                          ? 'bg-red-500 text-white rounded-br-none'
-                          : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                      }`}
-                    >
-                      {msg.userId !== user.id && (
-                        <div className="text-xs font-medium text-red-600 mb-1">
-                          {msg.username}
-                        </div>
-                      )}
-                      <div className="text-sm leading-relaxed">{msg.message}</div>
-                      <div className={`text-xs mt-1 ${
-                        msg.userId === user.id ? 'text-red-200' : 'text-gray-500'
-                      }`}>
-                        {formatTime(msg.timestamp)}
+              {messages.map((msg, index) => {
+                const isCurrentUserMsg = isCurrentUser(msg);
+                return (
+                  <div
+                    key={msg._id}
+                    className={`flex ${isCurrentUserMsg ? 'justify-end' : 'justify-start'} ${msg.system ? 'justify-center' : ''}`}
+                  >
+                    {msg.system ? (
+                      <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs mx-auto">
+                        {msg.message}
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    ) : (
+                      <div
+                        className={`max-w-[80%] px-3 py-2 rounded-2xl ${
+                          isCurrentUserMsg
+                            ? 'bg-red-500 text-white rounded-br-none'
+                            : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                        } ${index > 0 ? 'mt-2' : ''}`}
+                      >
+                        {!isCurrentUserMsg && (
+                          <div className="text-xs font-medium text-red-600 mb-1">
+                            {msg.username || (msg.userId?.username)}
+                          </div>
+                        )}
+                        <div className="text-sm leading-relaxed">{msg.message}</div>
+                        <div className={`text-xs mt-1 ${
+                          isCurrentUserMsg ? 'text-red-200' : 'text-gray-500'
+                        }`}>
+                          {formatTime(msg.timestamp)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
           
