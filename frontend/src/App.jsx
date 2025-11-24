@@ -9,6 +9,7 @@ import Dashboard from './pages/dashboard/Dashboard';
 import Alerts from './pages/Alerts';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
+import Landing from './pages/Landing';
 
 // Error Boundary Component
 const ErrorBoundary = ({ children }) => {
@@ -81,6 +82,9 @@ const AppContent = () => {
     <>
       {user && <SocketIndicator />}
       <Routes>
+        {/* Landing Page - Accessible to all */}
+        <Route path="/" element={<Landing />} />
+        
         {/* Public Routes */}
         <Route path="/login" element={
           <PublicRoute>
@@ -114,16 +118,13 @@ const AppContent = () => {
             <Profile />
           </ProtectedRoute>
         } />
-
-        {/* Default Route */}
-        <Route path="/" element={<Navigate to="/dashboard" />} />
         
         {/* 404 Route */}
         <Route path="*" element={
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
-              <Navigate to="/dashboard" replace />
+              <Navigate to="/" replace />
             </div>
           </div>
         } />
