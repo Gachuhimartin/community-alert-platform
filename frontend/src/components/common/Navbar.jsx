@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext'; // ADD THIS
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from './ThemeToggle'; // ADD THIS
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { isDark } = useTheme(); // ADD THIS
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,8 +37,8 @@ const Navbar = () => {
       to={to}
       className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-300 group ${
         isActiveRoute(to)
-          ? 'text-blue-600 bg-blue-50'
-          : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+          ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+          : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
       }`}
       onClick={() => setIsMobileMenuOpen(false)}
     >
@@ -47,7 +50,7 @@ const Navbar = () => {
       {/* Active indicator */}
       {isActiveRoute(to) && (
         <motion.div
-          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"
+          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 dark:bg-blue-400 rounded-full"
           layoutId="activeIndicator"
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
@@ -62,8 +65,8 @@ const Navbar = () => {
         animate={{ y: 0 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
-            : 'bg-white/95 backdrop-blur-md border-b border-gray-200/30'
+            ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-700/50'
+            : 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/30 dark:border-gray-700/30'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,10 +86,10 @@ const Navbar = () => {
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                     CommunityAlert
                   </span>
-                  <span className="text-xs text-gray-500 -mt-1">Live Protection</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">Live Protection</span>
                 </div>
               </Link>
             </motion.div>
@@ -100,14 +103,17 @@ const Navbar = () => {
 
             {/* User Menu - Desktop */}
             <div className="hidden md:flex items-center space-x-4">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              
               {/* Notification Bell */}
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <span className="text-xl">🔔</span>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></div>
               </motion.button>
 
               {/* Profile Dropdown */}
@@ -116,13 +122,13 @@ const Navbar = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center space-x-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl px-4 py-2 border border-gray-200 hover:border-blue-200 transition-all group"
+                  className="flex items-center space-x-3 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/30 rounded-2xl px-4 py-2 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600 transition-all group"
                 >
                   <div className="flex flex-col items-end">
-                    <span className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {user?.username}
                     </span>
-                    <span className="text-xs text-gray-500">Online</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Online</span>
                   </div>
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
                     <span className="text-white font-bold text-sm">
@@ -138,9 +144,9 @@ const Navbar = () => {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-64 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
                     >
-                      <div className="p-4 border-b border-gray-200/50">
+                      <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                             <span className="text-white font-bold">
@@ -148,8 +154,8 @@ const Navbar = () => {
                             </span>
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">{user?.username}</p>
-                            <p className="text-sm text-gray-500">{user?.email}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">{user?.username}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                           </div>
                         </div>
                       </div>
@@ -157,7 +163,7 @@ const Navbar = () => {
                       <div className="p-2">
                         <Link
                           to="/profile"
-                          className="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors text-gray-700"
+                          className="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
                           <span className="text-lg">👤</span>
@@ -165,7 +171,7 @@ const Navbar = () => {
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-red-50 transition-colors text-red-600 w-full text-left"
+                          className="flex items-center space-x-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400 w-full text-left"
                         >
                           <span className="text-lg">🚪</span>
                           <span>Logout</span>
@@ -183,7 +189,7 @@ const Navbar = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <div className="w-6 h-6 flex flex-col justify-center space-y-1">
                   <div className={`w-6 h-0.5 bg-current transition-all ${
@@ -208,14 +214,14 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-200/50 overflow-hidden"
+              className="md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
             >
               <div className="px-4 py-4 space-y-2">
                 <NavLink to="/dashboard" icon="📊">Dashboard</NavLink>
                 <NavLink to="/alerts" icon="🚨">Alerts</NavLink>
                 <NavLink to="/events" icon="📅">Events</NavLink>
                 
-                <div className="pt-4 border-t border-gray-200/50">
+                <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
                   <div className="flex items-center space-x-3 px-4 py-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                       <span className="text-white font-bold text-sm">
@@ -223,14 +229,14 @@ const Navbar = () => {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{user?.username}</p>
-                      <p className="text-sm text-gray-500">{user?.email}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{user?.username}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                     </div>
                   </div>
                   
                   <Link
                     to="/profile"
-                    className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-gray-700"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <span className="text-lg">👤</span>
@@ -239,7 +245,7 @@ const Navbar = () => {
                   
                   <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors text-red-600 w-full text-left"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400 w-full text-left"
                   >
                     <span className="text-lg">🚪</span>
                     <span>Logout</span>

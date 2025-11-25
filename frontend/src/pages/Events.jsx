@@ -95,6 +95,17 @@ const Events = () => {
     today: events.filter(e => new Date(e.date).toDateString() === new Date().toDateString()).length,
   };
 
+  // Added handleJoin function here
+  const handleJoin = async (eventId) => {
+    try {
+      await api.post(`/events/${eventId}/join`);
+      await fetchEvents(); // refresh events list
+    } catch (error) {
+      console.error('Error joining event:', error);
+      throw error;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50">
       <Navbar />
@@ -239,21 +250,22 @@ const Events = () => {
               </motion.div>
             ) : (
               <AnimatePresence>
-                {filteredEvents.map((event, index) => (
-                  <motion.div
-                    key={event._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.1 }}
-                    layout
-                  >
-                    <EventCard 
-                      event={event}
-                      onChat={handleOpenChat}
-                    />
-                  </motion.div>
-                ))}
+              {filteredEvents.map((event, index) => (
+                <motion.div
+                  key={event._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: index * 0.1 }}
+                  layout
+                >
+                  <EventCard 
+                    event={event}
+                    onChat={handleOpenChat}
+                    onJoin={handleJoin}    // Added onJoin prop here
+                  />
+                </motion.div>
+              ))}
               </AnimatePresence>
             )}
           </motion.div>
