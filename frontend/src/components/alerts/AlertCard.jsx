@@ -50,8 +50,8 @@ const AlertCard = ({ alert, onStatusUpdate, onDelete, onChat }) => {
   };
 
   const isCreator = user && (
-    (typeof alert.createdBy === 'object' && alert.createdBy._id === user.id) ||
-    (typeof alert.createdBy === 'string' && alert.createdBy === user.id)
+    (typeof alert.createdBy === 'object' && alert.createdBy._id === user._id) ||
+    (typeof alert.createdBy === 'string' && alert.createdBy === user._id)
   );
 
   const formatDate = (dateString) => {
@@ -83,8 +83,11 @@ const AlertCard = ({ alert, onStatusUpdate, onDelete, onChat }) => {
   const handleDelete = async () => {
     if (onDelete && isCreator) {
       setIsDeleting(true);
-      await onDelete(alert._id);
-      setIsDeleting(false);
+      try {
+        await onDelete(alert._id);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 

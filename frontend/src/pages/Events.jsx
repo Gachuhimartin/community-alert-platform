@@ -38,6 +38,44 @@ const Events = () => {
     filterEvents();
   }, [events, activeFilter, searchTerm]);
 
+  useEffect(() => {
+    if (socket) {
+      const showNotification = (message) => {
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-in slide-in-from-right';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      };
+
+      const handleNewEvent = (newEvent) => {
+        setEvents(prev => [newEvent, ...prev]);
+        showNotification(`New event created: ${newEvent.title}`);
+      };
+
+      const handleEventJoined = (data) => {
+        setEvents(prev => prev.map(event => {
+          if (event._id === data.event._id) {
+            return data.event;
+          }
+          return event;
+        }));
+        showNotification(`${data.user.username} joined event: ${data.event.title}`);
+      };
+
+      socket.on('event_broadcast', handleNewEvent);
+      socket.on('event_joined', handleEventJoined);
+
+      return () => {
+        socket.off('event_broadcast', handleNewEvent);
+        socket.off('event_joined', handleEventJoined);
+      };
+    }
+  }, [socket]);
+
   const fetchEvents = async () => {
     try {
       const response = await api.get('/events');

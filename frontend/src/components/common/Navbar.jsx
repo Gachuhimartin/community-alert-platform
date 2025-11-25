@@ -1,18 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext'; // ADD THIS
+import { useTheme } from '../../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import ThemeToggle from './ThemeToggle'; // ADD THIS
+import ThemeToggle from './ThemeToggle';
+import { useSocket } from '../../context/SocketContext';
+import NotificationsDropdown from './NotificationsDropdown';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const { isDark } = useTheme(); // ADD THIS
+  const { isDark } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const { notifications, markNotificationAsRead } = useSocket();
+
+  // Count unread notifications
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const notificationBellRef = useRef(null);
+
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationBellRef.current &&
+        !notificationBellRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+    if (showNotifications) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNotifications]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,9 +58,7 @@ const Navbar = () => {
     setIsProfileMenuOpen(false);
   };
 
-  const isActiveRoute = (path) => {
-    return location.pathname === path;
-  };
+  const isActiveRoute = (path) => location.pathname === path;
 
   const NavLink = ({ to, children, icon }) => (
     <Link
@@ -46,13 +74,13 @@ const Navbar = () => {
         <span className="text-lg">{icon}</span>
         <span>{children}</span>
       </div>
-      
+
       {/* Active indicator */}
       {isActiveRoute(to) && (
         <motion.div
           className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 dark:bg-blue-400 rounded-full"
           layoutId="activeIndicator"
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         />
       )}
     </Link>
@@ -96,25 +124,46 @@ const Navbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
-              <NavLink to="/dashboard" icon="📊">Dashboard</NavLink>
-              <NavLink to="/alerts" icon="🚨">Alerts</NavLink>
-              <NavLink to="/events" icon="📅">Events</NavLink>
+              <NavLink to="/dashboard" icon="📊">
+                Dashboard
+              </NavLink>
+              <NavLink to="/alerts" icon="🚨">
+                Alerts
+              </NavLink>
+              <NavLink to="/events" icon="📅">
+                Events
+              </NavLink>
             </div>
 
             {/* User Menu - Desktop */}
             <div className="hidden md:flex items-center space-x-4">
               {/* Theme Toggle */}
               <ThemeToggle />
-              
+
               {/* Notification Bell */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                <span className="text-xl">🔔</span>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></div>
-              </motion.button>
+              <div className="relative" ref={notificationBellRef}>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  aria-label="Notifications"
+                >
+                  <span className="text-xl">🔔</span>
+                  {/* Red dot badge if there are unread notifications */}
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+                  )}
+                </motion.button>
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <NotificationsDropdown
+                    notifications={notifications}
+                    onClose={() => setShowNotifications(false)}
+                    onMarkAsRead={markNotificationAsRead}
+                  />
+                )}
+              </div>
 
               {/* Profile Dropdown */}
               <div className="relative">
@@ -159,7 +208,7 @@ const Navbar = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="p-2">
                         <Link
                           to="/profile"
@@ -192,15 +241,21 @@ const Navbar = () => {
                 className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <div className="w-6 h-6 flex flex-col justify-center space-y-1">
-                  <div className={`w-6 h-0.5 bg-current transition-all ${
-                    isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
-                  }`}></div>
-                  <div className={`w-6 h-0.5 bg-current transition-all ${
-                    isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
-                  }`}></div>
-                  <div className={`w-6 h-0.5 bg-current transition-all ${
-                    isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
-                  }`}></div>
+                  <div
+                    className={`w-6 h-0.5 bg-current transition-all ${
+                      isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
+                    }`}
+                  ></div>
+                  <div
+                    className={`w-6 h-0.5 bg-current transition-all ${
+                      isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  ></div>
+                  <div
+                    className={`w-6 h-0.5 bg-current transition-all ${
+                      isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
+                    }`}
+                  ></div>
                 </div>
               </motion.button>
             </div>
@@ -217,10 +272,16 @@ const Navbar = () => {
               className="md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
             >
               <div className="px-4 py-4 space-y-2">
-                <NavLink to="/dashboard" icon="📊">Dashboard</NavLink>
-                <NavLink to="/alerts" icon="🚨">Alerts</NavLink>
-                <NavLink to="/events" icon="📅">Events</NavLink>
-                
+                <NavLink to="/dashboard" icon="📊">
+                  Dashboard
+                </NavLink>
+                <NavLink to="/alerts" icon="🚨">
+                  Alerts
+                </NavLink>
+                <NavLink to="/events" icon="📅">
+                  Events
+                </NavLink>
+
                 <div className="pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
                   <div className="flex items-center space-x-3 px-4 py-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -229,11 +290,13 @@ const Navbar = () => {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white">{user?.username}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {user?.username}
+                      </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                     </div>
                   </div>
-                  
+
                   <Link
                     to="/profile"
                     className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
@@ -242,7 +305,7 @@ const Navbar = () => {
                     <span className="text-lg">👤</span>
                     <span>Profile Settings</span>
                   </Link>
-                  
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-red-600 dark:text-red-400 w-full text-left"

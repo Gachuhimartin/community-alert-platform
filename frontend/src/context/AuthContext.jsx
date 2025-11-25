@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(response.data.user));
     } catch (error) {
       console.error('Auth check failed:', error);
-      // Clear invalid token
+      // Clear invalid token and logout user
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);

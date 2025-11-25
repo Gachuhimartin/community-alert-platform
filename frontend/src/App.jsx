@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { SocketProvider } from './context/SocketContext';
+import  SocketProvider  from './context/SocketContext';
 import { ThemeProvider } from './context/ThemeContext'; // ADD THIS
 import SocketIndicator from './components/common/SocketIndicator';
 import Login from './pages/auth/Login';
@@ -11,6 +11,8 @@ import Alerts from './pages/Alerts';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
 import Landing from './pages/Landing';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Error Boundary Component
 const ErrorBoundary = ({ children }) => {
@@ -143,6 +145,7 @@ function App() {
             <SocketProvider>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
                 <AppContent />
+                <ToastContainer />
               </div>
             </SocketProvider>
           </AuthProvider>
