@@ -124,8 +124,8 @@ const AlertForm = ({ onSubmit, onCancel }) => {
               onChange={handleChange}
               required
               maxLength={100}
-              className={`w-full px-4 py-4 bg-gray-50 border-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 ${
-                errors.title ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'
+              className={`w-full px-4 py-4 bg-gray-50 border-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 ${
+                errors.title ? 'border-red-500' : 'border-gray-200'
               }`}
               placeholder="Brief description of the alert"
             />
@@ -206,7 +206,7 @@ const AlertForm = ({ onSubmit, onCancel }) => {
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 appearance-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 appearance-none"
                 >
                   {Object.entries(ALERT_CATEGORIES).map(([key, value]) => (
                     <option key={key} value={key}>{value}</option>
@@ -264,8 +264,8 @@ const AlertForm = ({ onSubmit, onCancel }) => {
               value={formData.location}
               onChange={handleChange}
               required
-              className={`w-full px-4 py-4 bg-gray-50 border-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 ${
-                errors.location ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'
+              className={`w-full px-4 py-4 bg-gray-50 border-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 ${
+                errors.location ? 'border-red-500' : 'border-gray-200'
               }`}
               placeholder="Where is this happening? (e.g., Main Street Park, Downtown Area)"
             />

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import  SocketProvider  from './context/SocketContext';
-import { ThemeProvider } from './context/ThemeContext'; // ADD THIS
+import { ThemeProvider } from './context/ThemeContext';
 import SocketIndicator from './components/common/SocketIndicator';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -30,10 +30,10 @@ const ErrorBoundary = ({ children }) => {
 
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Something went wrong</h1>
-          <button 
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h1>
+          <button
             onClick={() => window.location.reload()}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
           >
@@ -50,11 +50,11 @@ const ErrorBoundary = ({ children }) => {
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-lg text-gray-900 dark:text-white">Loading...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg text-gray-900">Loading...</div>
       </div>
     );
   }
@@ -124,9 +124,9 @@ const AppContent = () => {
         
         {/* 404 Route */}
         <Route path="*" element={
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">404 - Page Not Found</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
               <Navigate to="/" replace />
             </div>
           </div>
@@ -139,18 +139,18 @@ const AppContent = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider> {/* ADD THIS WRAPPER */}
-        <Router>
+      <Router>
+        <ThemeProvider>
           <AuthProvider>
             <SocketProvider>
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+              <div className="min-h-screen bg-gray-50 transition-colors duration-300">
                 <AppContent />
                 <ToastContainer />
               </div>
             </SocketProvider>
           </AuthProvider>
-        </Router>             
-      </ThemeProvider>
+        </ThemeProvider>
+      </Router>
     </ErrorBoundary>
   );
 }

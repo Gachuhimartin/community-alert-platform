@@ -13,43 +13,33 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(false);
 
-  // Initialize theme from localStorage or system preference
   useEffect(() => {
+    // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme) {
-      setIsDark(savedTheme === 'dark');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setIsDark(true);
+      document.documentElement.classList.add('dark');
     } else {
-      setIsDark(systemPrefersDark);
+      setIsDark(false);
+      document.documentElement.classList.remove('dark');
     }
   }, []);
 
-  // Update localStorage and document class when theme changes
-  useEffect(() => {
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    
-    if (isDark) {
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    if (!isDark) {
       document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
+      localStorage.setItem('theme', 'light');
     }
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark(prev => !prev);
-  };
-
-  const value = {
-    isDark,
-    toggleTheme,
-    theme: isDark ? 'dark' : 'light'
   };
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
